@@ -83,7 +83,7 @@ class StNet(nn.Module):
         # size (batch_size*T, Ci, Hi, Wi)
         # print('layer4',x.size())
         size = x.size()
-        x = F.avg_pool3d(x, kernel_size = (1, size[2],size[3]))
+        x = F.avg_pool2d(x, kernel_size = (size[2],size[3]))
         # print('avgpool',x.size())
         # size (batch_size*T, Ci, 1, 1)
         x = x.view(B, size[1], self.T)
