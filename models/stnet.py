@@ -4,9 +4,9 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import math
 from functools import partial
-from resnet_2d import Bottleneck, conv1x1, conv3x3
-from SE_Resnet import BottleneckX
-from temporal_xception import TemporalXception
+from models.resnet_2d import Bottleneck, conv1x1, conv3x3
+from models.SE_Resnet import BottleneckX
+from models.temporal_xception import TemporalXception
 
 
 class StNet(nn.Module):
