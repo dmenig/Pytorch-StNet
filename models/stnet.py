@@ -68,6 +68,7 @@ class StNet(nn.Module):
     def forward(self, x):
         # size (batch_size, channels, video_length = T * N, height, width)
         B, C, L, H, W = x.size()
+        x = x.permute(0, 2, 1, 3, 4)
         assert self.T * self.N == L
         x = x.view(B * self.T, self.N * C, H, W)
         x = self.conv1(x)
