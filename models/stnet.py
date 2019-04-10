@@ -68,12 +68,6 @@ class StNet(nn.Module):
             downsample_padding=downsample_padding,
         )
 
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
-            elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
         self.temp1 = TemporalBlock(512)
 
         self.layer3 = self._make_layer(
@@ -181,6 +175,15 @@ class TemporalBlock(nn.Module):
         )
         self.bn1 = nn.BatchNorm3d(channels)
         self.relu = nn.ReLU(inplace=True)
+        for m in self.modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.dirac_(m.weight)
+                # m.weight.data.fill_(1 / (3 * self.channels))
+                if m.bias is not None:
+                    m.bias.data.zero_()
+            elif isinstance(m, nn.BatchNorm3d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
 
     def forward(self, x):
         B, T, C, H, W = x.size()

@@ -18,7 +18,16 @@ class TemporalXception(nn.Module):
             out_channels, out_channels, kernel_size=3, padding=1
         )
         self.conv = nn.Conv1d(in_channels, out_channels, kernel_size=1, padding=0)
+
         self.bn3 = nn.BatchNorm1d(out_channels)
+        for m in [self.bn1, self.bn2, self.bn3, self.conv]:
+            if isinstance(m, nn.Conv3d) or isinstance(m, nn.Conv1d):
+                nn.init.dirac_(m.weight)
+                if m.bias is not None:
+                    m.bias.data.zero_()
+            elif isinstance(m, nn.BatchNorm3d) or isinstance(m, nn.BatchNorm1d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
 
     def forward(self, x):
         B, C, T = x.size()
@@ -63,9 +72,21 @@ class SeparableConv1d(nn.Module):
             groups=in_channels,
             bias=bias,
         )
+        ## init seprabale conv as init
+        self.conv1.weight.data.zero_()
+        self.conv1.weight[:, :, kernel_size // 2].data.fill_(1)
+
         self.pointwise = nn.Conv1d(
             in_channels, out_channels, 1, 1, 0, 1, groups=1, bias=bias
         )
+        nn.init.dirac_(self.pointwise.weight)
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv3d) or isinstance(m, nn.Conv1d):
+                if m.bias is not None:
+                    m.bias.data.zero_()
+            if isinstance(m, nn.BatchNorm3d) or isinstance(m, nn.BatchNorm1d):
+                m.weight.data.fill_(1)
 
     def forward(self, x):
         x = self.conv1(x)
