@@ -59,7 +59,7 @@ class BasicBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
-    expansion = 1
+    expansion = 4
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(Bottleneck, self).__init__()
@@ -71,6 +71,8 @@ class Bottleneck(nn.Module):
         self.bn3 = nn.BatchNorm2d(planes * self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
+        self.inplanes = inplanes
+        self.planes = planes
         self.stride = stride
 
     def forward(self, x):
