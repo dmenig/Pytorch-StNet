@@ -10,6 +10,8 @@ from algorithmes.deep.models.senet import SEResNeXtBottleneck
 from collections import OrderedDict
 
 
+import torchvision
+
 
 class StNet(nn.Module):
     def __init__(
@@ -190,6 +192,23 @@ class TemporalBlock(nn.Module):
         return x
 
 
+def load_weights(model, state):
+    pretrained_dict = {}
+    model_state = model.state_dict()
+    for name, param in state.items():
+        if name.startswith("layer0.conv1"):
+            pretrained_dict[name] = state[name].repeat(1, model.N, 1, 1) / model.N
+        else:
+            pretrained_dict[name] = state[name]
+
+    model_state.update(pretrained_dict)
+    model.load_state_dict(model_state)
+    return model
+
+
+import pretrainedmodels
+
+
 def stnet50(**kwargs):
     """
     Construct stnet with a SE-Resnext 50 backbone.
@@ -207,4 +226,11 @@ def stnet50(**kwargs):
         downsample_padding=0,
         **kwargs,
     )
+    model = load_weights(
+        model,
+        pretrainedmodels.__dict__["se_resnext50_32x4d"](
+            num_classes=1000, pretrained="imagenet"
+        ).state_dict(),
+    )
+
     return model
