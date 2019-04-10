@@ -7,7 +7,7 @@ This work is largely inspired by those codes :
 
 ### Squeeze and Excite Resnet
 
-https://github.com/StickCui/PyTorch-SE-ResNet.git
+https://github.com/hujie-frank/SENet
 
 ### Traditionnal Resnet
 
