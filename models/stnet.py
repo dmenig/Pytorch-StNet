@@ -133,7 +133,7 @@ class StNet(nn.Module):
     def forward(self, x):
         # size (batch_size, channels, video_length = T * N, height, width)
         B, C, L, H, W = x.size()
-        x = x.permute(0, 2, 1, 3, 4)
+        x = x.permute(0, 2, 1, 3, 4).contiguous()
         assert self.T * self.N == L
         x = x.view(B * self.T, self.N * C, H, W)
         x = self.layer0(x)
@@ -141,19 +141,27 @@ class StNet(nn.Module):
         x = self.layer2(x)
         # size (batch_size*T, Ci, Hi, Wi)
         size = x.size()
-        x = x.view(B, self.T, size[1], size[2], size[3])
+        x = x.view(B, self.T, x.size(1), x.size(2), x.size(3))
+        B, T, C, H, W = x.size()
+        x = x.permute(0, 2, 1, 3, 4)
         x = self.temp1(x)
+        x = x.permute(0, 2, 1, 3, 4).contiguous()
+        x = x.view(B * T, C, H, W)
         x = self.layer3(x)
         # size (batch_size*T, Ci, Hi, Wi)
         size = x.size()
-        x = x.view(B, self.T, size[1], size[2], size[3])
+        x = x.view(B, self.T, x.size(1), x.size(2), x.size(3))
+        B, T, C, H, W = x.size()
+        x = x.permute(0, 2, 1, 3, 4)
         x = self.temp2(x)
+        x = x.permute(0, 2, 1, 3, 4).contiguous()
+        x = x.view(B * T, C, H, W)
         x = self.layer4(x)
         # size (batch_size*T, Ci, Hi, Wi)
         size = x.size()
         x = F.avg_pool2d(x, kernel_size=(size[2], size[3]))
         # size (batch_size*T, Ci, 1, 1)
-        x = x.view(B, size[1], self.T)
+        x = x.view(B, self.T, size[1]).permute(0, 2, 1)
         # size (batch_size, T, Ci)
         x = self.xception(x)
         x = self.last_linear(x)
@@ -186,12 +194,9 @@ class TemporalBlock(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        B, T, C, H, W = x.size()
-        x = x.permute(0, 2, 1, 3, 4)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        x = x.view(B * T, C, H, W)
         return x
 
 

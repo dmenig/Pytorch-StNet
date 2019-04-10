@@ -31,21 +31,14 @@ class TemporalXception(nn.Module):
 
     def forward(self, x):
         B, C, T = x.size()
-        # print('xception input', x.size())
         x = self.bn1(x)
         x2 = self.conv(x)
-        # print('xception conv', x2.size())
         x1 = self.sepconv1(x)
-        # print('xception sepconv1', x1.size())
         x1 = F.relu(self.bn2(x1))
-        # print('xception bn1', x1.size())
         x1 = self.sepconv2(x1)
-        # print('xception sepconv2', x1.size())
-        # size (B, T, C)
-        x = F.relu(self.bn3(x1 + x2))
-        # print('xception bn3', x1.size())
+        # size (B, C, T)
+        x = F.relu(self.bn3(x1 + x2)).div(2.0)
         x = F.max_pool1d(x, kernel_size=x.size(-1))
-        # print('xception maxpool', x1.size())
         # size (B,C,1)
         return x.view(x.size(0), x.size(1))
 
@@ -77,7 +70,14 @@ class SeparableConv1d(nn.Module):
         self.conv1.weight[:, :, kernel_size // 2].data.fill_(1)
 
         self.pointwise = nn.Conv1d(
-            in_channels, out_channels, 1, 1, 0, 1, groups=1, bias=bias
+            in_channels,
+            out_channels,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            dilation=1,
+            groups=1,
+            bias=bias,
         )
         nn.init.dirac_(self.pointwise.weight)
 
