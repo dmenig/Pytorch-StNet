@@ -6,7 +6,7 @@ import math
 from functools import partial
 from models.resnet_2d import Bottleneck, conv1x1, conv3x3
 from models.temporal_xception import TemporalXception
-from algorithmes.deep.models.senet import SEResNeXtBottleneck
+from models.senet import SEResNeXtBottleneck
 from collections import OrderedDict
 
 
